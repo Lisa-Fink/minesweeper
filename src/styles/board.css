@@ -8,3 +8,7 @@
     border: 1px black solid;
     background-color: rgb(221, 221, 221);
 }
+
+.unopen {
+    background-color: rgb(83, 83, 83);
+}

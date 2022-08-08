@@ -12,11 +12,14 @@ function Board(props) {
 
   const { board, setBoard, flags, setFlags } = props;
 
+  const nums = '12345678';
+
   const processClick = (e) => {
     console.log(e.target.id);
     const tile = e.target.id;
     if (board[tile - 1] === 0) {
       setBoard([...board.slice(0, tile - 1), 'u', ...board.slice(tile)]);
+      //TODO change surrounding tiles to blank or numbers
     } else if (board[tile - 1] === 'x') {
       console.log('game over');
     }
@@ -24,7 +27,16 @@ function Board(props) {
 
   const boardGrid = board.map((grid, key) => {
     return (
-      <div className="board-grid" key={key} id={key + 1} onClick={processClick}>
+      <div
+        className={
+          (grid === 'u') | nums.includes(grid)
+            ? 'board-grid unopen'
+            : 'board-grid'
+        }
+        key={key}
+        id={key + 1}
+        onClick={processClick}
+      >
         {grid !== 0 && grid !== 'x' && grid}
       </div>
     );
