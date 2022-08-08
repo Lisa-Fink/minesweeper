@@ -1,0 +1,10 @@
+.board-container {
+    display: grid;
+    grid-template-columns: repeat(9, 60px);
+    grid-template-rows: repeat(9, 60px);
+}
+
+.board-grid {
+    border: 1px black solid;
+    background-color: rgb(221, 221, 221);
+}
