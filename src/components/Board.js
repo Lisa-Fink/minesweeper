@@ -10,7 +10,8 @@ function Board(props) {
   // u is unopen but blank
   // x is a mine (game over)
 
-  const { board, setBoard, flags, setFlags } = props;
+  const { board, setBoard, flags, setFlags, mineBoard } = props;
+
   const cellsToCheck = useRef(new Set());
 
   const nums = '12345678';
@@ -21,7 +22,6 @@ function Board(props) {
     if (board[cell - 1] === 0) {
       console.log('board on clicked cell: ', board[cell - 1]);
       clearCells(cell);
-      //TODO change surrounding cells to blank or numbers
     } else if (board[cell - 1] === 'x') {
       console.log('game over');
     }
@@ -31,9 +31,14 @@ function Board(props) {
     e.preventDefault();
     console.log(e.target.id);
     const cell = e.target.id;
-    if (board[cell - 1] === 0) {
-      setBoard([...board.slice(0, cell - 1), 'f', ...board.slice(cell)]);
-      setFlags([...flags, cell]);
+    if (!nums.includes(board[cell - 1])) {
+      if (board[cell - 1] === 'f') {
+        setBoard([...board.slice(0, cell - 1), 0, ...board.slice(cell)]);
+        //setFlags([...flags, cell])
+      } else {
+        setBoard([...board.slice(0, cell - 1), 'f', ...board.slice(cell)]);
+        setFlags([...flags, cell]);
+      }
     }
   };
   let clearCellsStepOne = useRef(false);
@@ -46,26 +51,30 @@ function Board(props) {
 
     // if there is a mine in those locations, add numbers appropriately
     // if not a mine then run clearCells(onThisCell)
-    let new_board = [...board];
+    if (parseInt(board[cell - 1]) === 0) {
+      let new_board = [...board];
 
-    const mineCount = findMines(cell);
-    if (!mineCount) {
-      new_board = [
-        ...new_board.slice(0, cell - 1),
-        'u',
-        ...new_board.slice(cell),
-      ];
-    } else {
-      new_board = [
-        ...new_board.slice(0, cell - 1),
-        mineCount,
-        ...new_board.slice(cell),
-      ];
+      const mineCount = findMines(cell);
+      if (!mineCount) {
+        new_board = [
+          ...new_board.slice(0, cell - 1),
+          'u',
+          ...new_board.slice(cell),
+        ];
+        console.log('setting u minecount: ', mineCount);
+      } else {
+        new_board = [
+          ...new_board.slice(0, cell - 1),
+          mineCount,
+          ...new_board.slice(cell),
+        ];
+        console.log('setting minecount', mineCount);
+      }
+      clearCellsStepOne.current = true;
+      currentCell.current = cell;
+      setBoard(new_board);
+      console.log('use effect should trigger here');
     }
-    clearCellsStepOne.current = true;
-    currentCell.current = cell;
-    setBoard(new_board);
-    console.log('use effect should trigger here');
   };
 
   const clearCells2 = (adjCell) => {
@@ -107,22 +116,18 @@ function Board(props) {
     if (clearCellsStepOne.current === true) {
       clearCellsStepOne.current = false;
 
-      console.log(currentCell.current, ' set to U');
-
       let copy = cellsToCheck.current;
       copy.delete(currentCell.current);
       cellsToCheck.current = copy;
 
       const adjacent = findAdjacent(currentCell.current);
       adjacent.forEach((cell) => adjacentRef.current.add(cell));
-      console.log('adj ref', adjacentRef.current);
       if (adjacentRef.current.size > 0) {
         let current = [...adjacentRef.current][0];
         clearCells2(current);
       }
 
       if (cellsToCheck.current.size > 0) {
-        console.log('in cells to check: ');
         let checking = [...cellsToCheck.current][0];
         clearCells(checking);
       }
@@ -137,7 +142,6 @@ function Board(props) {
         clearCells2(current);
       }
       if (cellsToCheck.current.size > 0) {
-        console.log('in cells to check: ');
         let checking = [...cellsToCheck.current][0];
         clearCells(checking);
       }
@@ -171,7 +175,6 @@ function Board(props) {
       !right_edge && adjacent.push(cell + 10);
       adjacent.push(cell + 9);
     }
-    console.log('adjacent', adjacent, 'cell', cell);
     return adjacent;
   };
 
@@ -179,11 +182,20 @@ function Board(props) {
     // take a cell, and return the total mines in its adjacent cells
     const cellsArr = findAdjacent(cell);
     let mineCount = 0;
+    console.log(
+      'in findMines cell: ',
+      cell,
+      'adjCells: ',
+      cellsArr,
+      'mineBoard',
+      mineBoard
+    );
     for (let cell of cellsArr) {
-      if (board[cell - 1] === 'x') {
-        mineCount++;
+      if (mineBoard[cell - 1] === 'x') {
+        mineCount += 1;
       }
     }
+    console.log('mine count', mineCount);
     return mineCount;
   };
 

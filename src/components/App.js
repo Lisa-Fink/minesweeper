@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Board from './Board';
 
 function App() {
@@ -7,6 +7,8 @@ function App() {
   // 81 tiles - pick 10 out of 81
   const [flags, setFlags] = useState([]);
   const [board, setBoard] = useState([...blank_board]);
+
+  const mineBoard = useRef([]);
 
   const createMines = () => {
     // creates an array of nums from 1-81
@@ -26,6 +28,7 @@ function App() {
       grid.splice(mine, 1);
       console.log('set mine', grid[mine]);
     }
+    mineBoard.current = [...board_copy];
     setBoard(board_copy);
   };
 
@@ -39,6 +42,7 @@ function App() {
         setBoard={setBoard}
         flags={flags}
         setFlags={setFlags}
+        mineBoard={[...mineBoard.current]}
       />
     </div>
   );
