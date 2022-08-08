@@ -11,21 +11,22 @@ function App() {
   const createMines = () => {
     // creates an array of nums from 1-81
     let grid = [...Array(82).keys()].slice(1);
-
+    let board_copy = [...board];
     for (let i = 0; i < 10; i++) {
-      // mine will be an index in mine
-      let mine = Math.floor(Math.random() * grid.length);
-
       // adds the number at grid index mine as a mine
-      setBoard([
-        ...board.slice(0, grid[mine]),
+      // grid[mine] is 2 then the index the board is 1
+      // mine will be an index in grid
+      let mine = Math.floor(Math.random() * grid.length);
+      board_copy = [
+        ...board_copy.slice(0, grid[mine]),
         'x',
-        ...board.slice(grid[mine] + 1),
-      ]);
-      console.log('set mines', grid[mine]);
+        ...board_copy.slice(grid[mine] + 1),
+      ];
       // removes the mine that was just added
-      grid = grid.slice(0, mine).concat(grid.slice(mine + 1));
+      grid.splice(mine, 1);
+      console.log('set mine', grid[mine]);
     }
+    setBoard(board_copy);
   };
 
   return (
