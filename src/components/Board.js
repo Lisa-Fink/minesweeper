@@ -6,8 +6,8 @@ function Board(props) {
   // board starts with 81 zeros
   // zero means open
   // f means flagged
-  // 1-8 is number of mines. only appears on unopen grids after clicking
-  // u is unopen but blank
+  // 1-8 is number of mines. only appears on unopened grids after clicking
+  // u is unopened but blank
   // x is a mine (game over)
 
   const { board, setBoard, flags, setFlags, mineBoard } = props;
@@ -31,13 +31,14 @@ function Board(props) {
     e.preventDefault();
     console.log(e.target.id);
     const cell = e.target.id;
+    const flag_count = flags;
     if (!nums.includes(board[cell - 1])) {
       if (board[cell - 1] === 'f') {
         setBoard([...board.slice(0, cell - 1), 0, ...board.slice(cell)]);
-        //setFlags([...flags, cell])
+        setFlags(flag_count - 1);
       } else {
         setBoard([...board.slice(0, cell - 1), 'f', ...board.slice(cell)]);
-        setFlags([...flags, cell]);
+        setFlags(flag_count + 1);
       }
     }
   };

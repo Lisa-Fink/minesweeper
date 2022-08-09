@@ -5,7 +5,7 @@ function App() {
   const blank_board = new Array(81).fill(0);
 
   // 81 tiles - pick 10 out of 81
-  const [flags, setFlags] = useState([]);
+  const [flags, setFlags] = useState(0);
   const [board, setBoard] = useState([...blank_board]);
 
   const mineBoard = useRef([]);
