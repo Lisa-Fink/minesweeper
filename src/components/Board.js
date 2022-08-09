@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import '../styles/board.css';
 
 function Board(props) {
@@ -12,142 +12,115 @@ function Board(props) {
 
   const { board, setBoard, flags, setFlags, mineBoard } = props;
 
-  const cellsToCheck = useRef(new Set());
+  const cellsToCheck = useRef([]);
+  const flagCheck = useRef(false);
 
   const nums = '12345678';
 
   const processClick = (e) => {
     console.log(e.target.id);
     const cell = e.target.id;
-    if (board[cell - 1] === 0) {
-      console.log('board on clicked cell: ', board[cell - 1]);
-      clearCells(cell);
-    } else if (board[cell - 1] === 'x') {
+    if (mineBoard[cell - 1] === 'x') {
       console.log('game over');
+    } else if (board[cell - 1] === 0) {
+      clearCells(cell);
     }
   };
-
-  const processFlag = (e) => {
-    e.preventDefault();
-    console.log(e.target.id);
-    const cell = e.target.id;
-    const flag_count = flags;
-    if (!nums.includes(board[cell - 1])) {
-      if (board[cell - 1] === 'f') {
-        setBoard([...board.slice(0, cell - 1), 0, ...board.slice(cell)]);
-        setFlags(flag_count - 1);
-      } else {
-        setBoard([...board.slice(0, cell - 1), 'f', ...board.slice(cell)]);
-        setFlags(flag_count + 1);
-      }
-    }
-  };
-  let clearCellsStepOne = useRef(false);
-  let currentCell = useRef(0);
 
   const clearCells = (cell) => {
-    console.log('starting clear cells with: ', cell);
-    // check adjacent cells on surround cells
-    // (if adjacent cells are off the edge of the board do not check)
-
-    // if there is a mine in those locations, add numbers appropriately
-    // if not a mine then run clearCells(onThisCell)
-    if (parseInt(board[cell - 1]) === 0) {
-      let new_board = [...board];
-
-      const mineCount = findMines(cell);
-      if (!mineCount) {
-        new_board = [
-          ...new_board.slice(0, cell - 1),
-          'u',
-          ...new_board.slice(cell),
-        ];
-        console.log('setting u minecount: ', mineCount);
-      } else {
-        new_board = [
-          ...new_board.slice(0, cell - 1),
-          mineCount,
-          ...new_board.slice(cell),
-        ];
-        console.log('setting minecount', mineCount);
-      }
-      clearCellsStepOne.current = true;
-      currentCell.current = cell;
-      setBoard(new_board);
-      console.log('use effect should trigger here');
+    // cellsToCheck will have len after first cycle. This will remove the
+    // cell that is currently being checked
+    if (cellsToCheck.current.length && cellsToCheck.current[0] === cell) {
+      cellsToCheck.current = cellsToCheck.current.slice(1);
     }
-  };
+    //find value for cell by checking for mines
+    //if it is a number - change cell to number - do nothing else
+    // if it is a u, -change cell to u - add adjacent to cellToCheck
+    // if it is a flag do nothing - and check cellToCheck length
 
-  const clearCells2 = (adjCell) => {
-    let newBoard = [...board];
+    const mines = findMines(cell);
 
-    console.log('check in adjacent: ', adjCell);
-    let adj = adjacentRef.current;
-    adj.delete(adjCell);
-    adjacentRef.current = adj;
-
-    if (parseInt(board[adjCell - 1]) === 0) {
-      const mineCount = findMines(adjCell);
-      console.log('minecount: ', mineCount);
-      if (!mineCount) {
-        // clearCells(adjCell);
-        cellsToCheck.current = cellsToCheck.current.add(adjCell);
-        console.log('added to cells to check: ', adjCell);
-      } else {
-        newBoard = [
-          ...newBoard.slice(0, adjCell - 1),
-          mineCount,
-          ...newBoard.slice(adjCell),
-        ];
-        console.log('set mine count', adjCell, ':', mineCount);
+    if (board[cell - 1] !== 'f') {
+      if (mines) {
+        // change cell on board to mine number
+        // setBoard, then useEffect calls clearCells if cellsToCheck.length
+        const newBoard = [...board];
+        newBoard[cell - 1] = mines;
+        setBoard(newBoard);
+      } else if (parseInt(board[cell - 1]) === 0) {
+        // change cell on board to u
+        // add adjacent to cellsToCheck
+        const adjacent = findAdjacent(cell);
+        const check = [];
+        for (const adj of adjacent) {
+          if (parseInt(board[adj - 1]) === 0) {
+            check.push(adj);
+          }
+        }
+        let combined = [...cellsToCheck.current, ...check];
+        // combines and removes duplicates
+        cellsToCheck.current = [...new Set(combined)];
+        // setBoard, then useEffect calls clearCells if cellsToCheck.length
+        const newBoard = [...board];
+        newBoard[cell - 1] = 'u';
         setBoard(newBoard);
       }
     } else {
-      if (adjacentRef.current.size > 0) {
-        let current = [...adjacentRef.current][0];
-        clearCells2(current);
+      if (cellsToCheck.current.length) {
+        clearCells(cellsToCheck.current[0]);
       }
     }
   };
 
-  const adjacentRef = useRef(new Set());
-
   useEffect(() => {
-    console.log('use effect top');
-    if (clearCellsStepOne.current === true) {
-      clearCellsStepOne.current = false;
-
-      let copy = cellsToCheck.current;
-      copy.delete(currentCell.current);
-      cellsToCheck.current = copy;
-
-      const adjacent = findAdjacent(currentCell.current);
-      adjacent.forEach((cell) => adjacentRef.current.add(cell));
-      if (adjacentRef.current.size > 0) {
-        let current = [...adjacentRef.current][0];
-        clearCells2(current);
-      }
-
-      if (cellsToCheck.current.size > 0) {
-        let checking = [...cellsToCheck.current][0];
-        clearCells(checking);
-      }
-      // for (const cell of cellsToCheck.current) {
-      //   console.log('in cells to check: ', cell);
-      //   let checking = cell;
-      //   clearCells(checking);
-      // }
-    } else {
-      if (adjacentRef.current.size > 0) {
-        let current = [...adjacentRef.current][0];
-        clearCells2(current);
-      }
-      if (cellsToCheck.current.size > 0) {
-        let checking = [...cellsToCheck.current][0];
-        clearCells(checking);
-      }
+    if (flagCheck.current === true) {
+      flagCheck.current = false;
+    } else if (cellsToCheck.current.length) {
+      clearCells(cellsToCheck.current[0]);
     }
   }, [board]);
+
+  const processFlag = (e) => {
+    e.preventDefault();
+    const cell = e.target.id;
+    const flag_count = flags;
+    if (board[cell - 1] === 'f') {
+      if (mineBoard[cell - 1] === 'x') {
+        flagCheck.current = true;
+        setFlags(flag_count - 1);
+        setBoard([...board.slice(0, cell - 1), 'x', ...board.slice(cell)]);
+      } else {
+        flagCheck.current = true;
+        setFlags(flag_count - 1);
+        setBoard([...board.slice(0, cell - 1), 0, ...board.slice(cell)]);
+      }
+    } else if (
+      (parseInt(board[cell - 1]) === 0) |
+      (mineBoard[cell - 1] === 'x')
+    ) {
+      flagCheck.current = true;
+      setBoard([...board.slice(0, cell - 1), 'f', ...board.slice(cell)]);
+      setFlags(flag_count + 1);
+    }
+  };
+
+  const boardGrid = board.map((grid, key) => {
+    return (
+      <div
+        className={
+          (grid === 'u') | nums.includes(grid)
+            ? 'board-grid unopen'
+            : 'board-grid'
+        }
+        key={key}
+        id={key + 1}
+        onClick={processClick}
+        onContextMenu={processFlag}
+      >
+        {grid !== 0 && grid !== 'x' && grid}
+      </div>
+    );
+  });
 
   const findAdjacent = (cell) => {
     let left_edge = true;
@@ -183,40 +156,13 @@ function Board(props) {
     // take a cell, and return the total mines in its adjacent cells
     const cellsArr = findAdjacent(cell);
     let mineCount = 0;
-    console.log(
-      'in findMines cell: ',
-      cell,
-      'adjCells: ',
-      cellsArr,
-      'mineBoard',
-      mineBoard
-    );
     for (let cell of cellsArr) {
       if (mineBoard[cell - 1] === 'x') {
         mineCount += 1;
       }
     }
-    console.log('mine count', mineCount);
     return mineCount;
   };
-
-  const boardGrid = board.map((grid, key) => {
-    return (
-      <div
-        className={
-          (grid === 'u') | nums.includes(grid)
-            ? 'board-grid unopen'
-            : 'board-grid'
-        }
-        key={key}
-        id={key + 1}
-        onClick={processClick}
-        onContextMenu={processFlag}
-      >
-        {grid !== 0 && grid !== 'x' && grid}
-      </div>
-    );
-  });
 
   return (
     <div>
