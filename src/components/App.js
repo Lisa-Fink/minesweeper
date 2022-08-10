@@ -1,5 +1,7 @@
 import { useState, useRef } from 'react';
+
 import Board from './Board';
+import TopBoard from './TopBoard';
 
 function App() {
   const blank_board = new Array(81).fill(0);
@@ -7,6 +9,10 @@ function App() {
   // 81 tiles - pick 10 out of 81
   const [flags, setFlags] = useState(0);
   const [board, setBoard] = useState([...blank_board]);
+
+  // timer states
+  const [isActive, setIsActive] = useState(false);
+  const [seconds, setSeconds] = useState(0);
 
   const mineBoard = useRef([]);
   const endOfGame = useRef(false);
@@ -33,11 +39,34 @@ function App() {
     setBoard(board_copy);
   };
 
+  const formattedTime = (sec) => {
+    //formats the time to a string
+    // const hours = Math.floor(sec / 3600);
+    let minutes = Math.floor(sec / 60);
+    let secs = sec;
+
+    if (minutes < 10) {
+      minutes = `0${minutes}`;
+    }
+    if (secs < 10) {
+      secs = `0${secs}`;
+    }
+
+    return `${minutes}:${secs}`;
+  };
+
   return (
     <div className="App">
       {/* App top board: mines set, reset, timer board */}
       hello
       <button onClick={createMines}>Start</button>
+      <TopBoard
+        endOfGame={endOfGame}
+        seconds={seconds}
+        setSeconds={setSeconds}
+        isActive={isActive}
+        formattedTime={formattedTime}
+      />
       <Board
         board={board}
         setBoard={setBoard}
@@ -45,6 +74,8 @@ function App() {
         setFlags={setFlags}
         mineBoard={[...mineBoard.current]}
         endOfGame={endOfGame}
+        isActive={isActive}
+        setIsActive={setIsActive}
       />
     </div>
   );
