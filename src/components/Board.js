@@ -8,28 +8,59 @@ function Board(props) {
   // f means flagged
   // 1-8 is number of mines. only appears on unopened grids after clicking
   // u is unopened but blank
-  // x is a mine (game over)
+  // x is a mine (game over if clicked)
 
-  const { board, setBoard, flags, setFlags, mineBoard } = props;
+  const { board, setBoard, flags, setFlags, mineBoard, endOfGame } = props;
 
   const cellsToCheck = useRef([]);
   const flagCheck = useRef(false);
+  const checkWin = useRef(false);
 
   const nums = '12345678';
 
   const processClick = (e) => {
-    console.log(e.target.id);
-    const cell = e.target.id;
-    if (mineBoard[cell - 1] === 'x') {
-      console.log('game over');
-    } else if (board[cell - 1] === 0) {
-      clearCells(cell);
+    if (!endOfGame.current) {
+      console.log(e.target.id);
+      const cell = e.target.id;
+      if (mineBoard[cell - 1] === 'x') {
+        endOfGame.current = 'lose';
+        gameEnd();
+      } else if (board[cell - 1] === 0) {
+        clearCells(cell);
+      }
+    }
+  };
+
+  const processFlag = (e) => {
+    e.preventDefault();
+    if (!endOfGame.current) {
+      const cell = e.target.id;
+      const flag_count = flags;
+      if (board[cell - 1] === 'f') {
+        if (mineBoard[cell - 1] === 'x') {
+          flagCheck.current = true;
+          setFlags(flag_count - 1);
+          setBoard([...board.slice(0, cell - 1), 'x', ...board.slice(cell)]);
+        } else {
+          flagCheck.current = true;
+          setFlags(flag_count - 1);
+          setBoard([...board.slice(0, cell - 1), 0, ...board.slice(cell)]);
+        }
+      } else if (
+        (parseInt(board[cell - 1]) === 0) |
+        (mineBoard[cell - 1] === 'x')
+      ) {
+        flagCheck.current = true;
+        setBoard([...board.slice(0, cell - 1), 'f', ...board.slice(cell)]);
+        setFlags(flag_count + 1);
+      }
     }
   };
 
   const clearCells = (cell) => {
     // cellsToCheck will have len after first cycle. This will remove the
     // cell that is currently being checked
+
     if (cellsToCheck.current.length && cellsToCheck.current[0] === cell) {
       cellsToCheck.current = cellsToCheck.current.slice(1);
     }
@@ -70,6 +101,9 @@ function Board(props) {
         clearCells(cellsToCheck.current[0]);
       }
     }
+    if (!cellsToCheck.current.length) {
+      checkWin.current = true;
+    }
   };
 
   useEffect(() => {
@@ -77,50 +111,42 @@ function Board(props) {
       flagCheck.current = false;
     } else if (cellsToCheck.current.length) {
       clearCells(cellsToCheck.current[0]);
+    } else if (checkWin.current) {
+      checkWin.current = false;
+      console.log('check win');
+      let isEnd = 'checking';
+      for (const index in board) {
+        if (
+          (board[index] === 0) |
+          (board[index] === 'f' && mineBoard[index] !== 'x')
+        ) {
+          isEnd = false;
+          break;
+        }
+      }
+      if (isEnd !== false) {
+        console.log('winner');
+        endOfGame.current = 'win';
+        gameEnd();
+      }
     }
   }, [board]);
 
-  const processFlag = (e) => {
-    e.preventDefault();
-    const cell = e.target.id;
-    const flag_count = flags;
-    if (board[cell - 1] === 'f') {
-      if (mineBoard[cell - 1] === 'x') {
-        flagCheck.current = true;
-        setFlags(flag_count - 1);
-        setBoard([...board.slice(0, cell - 1), 'x', ...board.slice(cell)]);
-      } else {
-        flagCheck.current = true;
-        setFlags(flag_count - 1);
-        setBoard([...board.slice(0, cell - 1), 0, ...board.slice(cell)]);
-      }
-    } else if (
-      (parseInt(board[cell - 1]) === 0) |
-      (mineBoard[cell - 1] === 'x')
-    ) {
-      flagCheck.current = true;
-      setBoard([...board.slice(0, cell - 1), 'f', ...board.slice(cell)]);
-      setFlags(flag_count + 1);
-    }
+  const gameEnd = () => {
+    console.log('end of game');
+    showMines();
+    // TODO: set a short timeout and show menu
   };
 
-  const boardGrid = board.map((grid, key) => {
-    return (
-      <div
-        className={
-          (grid === 'u') | nums.includes(grid)
-            ? 'board-grid unopen'
-            : 'board-grid'
-        }
-        key={key}
-        id={key + 1}
-        onClick={processClick}
-        onContextMenu={processFlag}
-      >
-        {grid !== 0 && grid !== 'x' && grid}
-      </div>
-    );
-  });
+  const showMines = () => {
+    let newBoard = [...board];
+    for (const index in mineBoard) {
+      if (mineBoard[index] === 'x') {
+        newBoard[index] = 'x';
+      }
+    }
+    setBoard(newBoard);
+  };
 
   const findAdjacent = (cell) => {
     let left_edge = true;
@@ -163,6 +189,28 @@ function Board(props) {
     }
     return mineCount;
   };
+
+  const boardGrid = board.map((grid, key) => {
+    return (
+      <div
+        className={
+          (grid === 'u') | nums.includes(grid)
+            ? 'board-grid unopen'
+            : endOfGame.current === 'win' && grid === 'x'
+            ? 'board-grid win'
+            : endOfGame.current === 'lose' && grid === 'x'
+            ? 'board-grid lose'
+            : 'board-grid'
+        }
+        key={key}
+        id={key + 1}
+        onClick={processClick}
+        onContextMenu={processFlag}
+      >
+        {grid !== 0 && grid !== 'x' && grid}
+      </div>
+    );
+  });
 
   return (
     <div>
