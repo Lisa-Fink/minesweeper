@@ -12,3 +12,11 @@
 .unopen {
     background-color: rgb(83, 83, 83);
 }
+
+.win {
+    background-color: green;
+}
+
+.lose {
+    background-color: red;
+}
