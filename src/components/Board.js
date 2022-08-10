@@ -15,6 +15,7 @@ function Board(props) {
   const cellsToCheck = useRef([]);
   const flagCheck = useRef(false);
   const checkWin = useRef(false);
+  const copyBoard = useRef([]);
 
   const nums = '12345678';
 
@@ -58,10 +59,14 @@ function Board(props) {
   };
 
   const clearCells = (cell) => {
+    if (!cellsToCheck.current.length) {
+      // create a copy of board. the copy will be updated until all cells
+      // have been cleared, then board state will be updated and re rendered
+      copyBoard.current = [...board];
+    }
     // cellsToCheck will have len after first cycle. This will remove the
     // cell that is currently being checked
-
-    if (cellsToCheck.current.length && cellsToCheck.current[0] === cell) {
+    else if (cellsToCheck.current.length && cellsToCheck.current[0] === cell) {
       cellsToCheck.current = cellsToCheck.current.slice(1);
     }
     //find value for cell by checking for mines
@@ -71,49 +76,43 @@ function Board(props) {
 
     const mines = findMines(cell);
 
-    if (board[cell - 1] !== 'f') {
+    if (copyBoard[cell - 1] !== 'f') {
       if (mines) {
-        // change cell on board to mine number
-        // setBoard, then useEffect calls clearCells if cellsToCheck.length
-        const newBoard = [...board];
+        // change cell on copyBoard to mine number
+        const newBoard = [...copyBoard.current];
         newBoard[cell - 1] = mines;
-        setBoard(newBoard);
-      } else if (parseInt(board[cell - 1]) === 0) {
+        copyBoard.current = newBoard;
+      } else if (parseInt(copyBoard.current[cell - 1]) === 0) {
         // change cell on board to u
         // add adjacent to cellsToCheck
         const adjacent = findAdjacent(cell);
         const check = [];
         for (const adj of adjacent) {
-          if (parseInt(board[adj - 1]) === 0) {
+          if (parseInt(copyBoard.current[adj - 1]) === 0) {
             check.push(adj);
           }
         }
         let combined = [...cellsToCheck.current, ...check];
         // combines and removes duplicates
         cellsToCheck.current = [...new Set(combined)];
-        // setBoard, then useEffect calls clearCells if cellsToCheck.length
-        const newBoard = [...board];
+        const newBoard = [...copyBoard.current];
         newBoard[cell - 1] = 'u';
-        setBoard(newBoard);
-      }
-    } else {
-      if (cellsToCheck.current.length) {
-        clearCells(cellsToCheck.current[0]);
+        copyBoard.current = newBoard;
       }
     }
-    if (!cellsToCheck.current.length) {
+    if (cellsToCheck.current.length) {
+      clearCells(cellsToCheck.current[0]);
+    } else {
       checkWin.current = true;
+      setBoard(copyBoard.current);
     }
   };
 
   useEffect(() => {
     if (flagCheck.current === true) {
       flagCheck.current = false;
-    } else if (cellsToCheck.current.length) {
-      clearCells(cellsToCheck.current[0]);
     } else if (checkWin.current) {
       checkWin.current = false;
-      console.log('check win');
       let isEnd = 'checking';
       for (const index in board) {
         if (
@@ -125,7 +124,6 @@ function Board(props) {
         }
       }
       if (isEnd !== false) {
-        console.log('winner');
         endOfGame.current = 'win';
         gameEnd();
       }
@@ -133,7 +131,6 @@ function Board(props) {
   }, [board]);
 
   const gameEnd = () => {
-    console.log('end of game');
     showMines();
     // TODO: set a short timeout and show menu
   };
