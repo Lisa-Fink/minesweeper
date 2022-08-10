@@ -10,7 +10,16 @@ function Board(props) {
   // u is unopened but blank
   // x is a mine (game over if clicked)
 
-  const { board, setBoard, flags, setFlags, mineBoard, endOfGame } = props;
+  const {
+    board,
+    setBoard,
+    flags,
+    setFlags,
+    mineBoard,
+    endOfGame,
+    isActive,
+    setIsActive,
+  } = props;
 
   const cellsToCheck = useRef([]);
   const flagCheck = useRef(false);
@@ -21,6 +30,9 @@ function Board(props) {
 
   const processClick = (e) => {
     if (!endOfGame.current) {
+      if (!isActive) {
+        setIsActive(true);
+      }
       console.log(e.target.id);
       const cell = e.target.id;
       if (mineBoard[cell - 1] === 'x') {
@@ -49,7 +61,7 @@ function Board(props) {
         }
       } else if (
         (parseInt(board[cell - 1]) === 0) |
-        (mineBoard[cell - 1] === 'x')
+        (board[cell - 1] === 'x')
       ) {
         flagCheck.current = true;
         setBoard([...board.slice(0, cell - 1), 'f', ...board.slice(cell)]);
@@ -111,13 +123,16 @@ function Board(props) {
   useEffect(() => {
     if (flagCheck.current === true) {
       flagCheck.current = false;
-    } else if (checkWin.current) {
+      checkWin.current = true;
+    }
+    if (checkWin.current) {
       checkWin.current = false;
       let isEnd = 'checking';
       for (const index in board) {
         if (
           (board[index] === 0) |
-          (board[index] === 'f' && mineBoard[index] !== 'x')
+          (board[index] === 'f' && mineBoard[index] !== 'x') |
+          (board[index] === 'x')
         ) {
           isEnd = false;
           break;
@@ -131,6 +146,7 @@ function Board(props) {
   }, [board]);
 
   const gameEnd = () => {
+    setIsActive(false);
     showMines();
     // TODO: set a short timeout and show menu
   };
