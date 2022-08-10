@@ -1,4 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+
+import '../styles/app.css';
 
 import Board from './Board';
 import TopBoard from './TopBoard';
@@ -16,6 +18,15 @@ function App() {
 
   const mineBoard = useRef([]);
   const endOfGame = useRef(false);
+  const set_mines = useRef(false);
+
+  // set the mines the first time the game loads
+  useEffect(() => {
+    if (!set_mines.current) {
+      createMines();
+      set_mines.current = true;
+    }
+  }, []);
 
   const createMines = () => {
     // creates an array of nums from 1-81
@@ -43,7 +54,7 @@ function App() {
     //formats the time to a string
     // const hours = Math.floor(sec / 3600);
     let minutes = Math.floor(sec / 60);
-    let secs = sec;
+    let secs = sec % 60;
 
     if (minutes < 10) {
       minutes = `0${minutes}`;
@@ -57,26 +68,27 @@ function App() {
 
   return (
     <div className="App">
-      {/* App top board: mines set, reset, timer board */}
-      hello
-      <button onClick={createMines}>Start</button>
-      <TopBoard
-        endOfGame={endOfGame}
-        seconds={seconds}
-        setSeconds={setSeconds}
-        isActive={isActive}
-        formattedTime={formattedTime}
-      />
-      <Board
-        board={board}
-        setBoard={setBoard}
-        flags={flags}
-        setFlags={setFlags}
-        mineBoard={[...mineBoard.current]}
-        endOfGame={endOfGame}
-        isActive={isActive}
-        setIsActive={setIsActive}
-      />
+      <div className="app-container">
+        {/* <button onClick={createMines}>Start</button> */}
+        <TopBoard
+          endOfGame={endOfGame}
+          seconds={seconds}
+          setSeconds={setSeconds}
+          isActive={isActive}
+          formattedTime={formattedTime}
+          flags={flags}
+        />
+        <Board
+          board={board}
+          setBoard={setBoard}
+          flags={flags}
+          setFlags={setFlags}
+          mineBoard={[...mineBoard.current]}
+          endOfGame={endOfGame}
+          isActive={isActive}
+          setIsActive={setIsActive}
+        />
+      </div>
     </div>
   );
 }
