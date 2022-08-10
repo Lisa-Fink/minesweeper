@@ -1,0 +1,18 @@
+.App {
+    width:900px;
+    margin: 0 auto;
+    background-color: beige;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.app-container {
+    width: min-content;
+    border: 5px solid black;
+    border-radius: 15px;
+    padding: 10px;
+
+    
+}

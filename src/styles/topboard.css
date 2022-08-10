@@ -1,0 +1,34 @@
+.top-board {
+    display: flex;
+    justify-content: space-between;
+    padding: 0px 40px 10px 40px;
+}
+
+.top-container {
+    width:150px;
+    display: flex;
+    justify-content:center ;
+}
+
+.flags {
+    justify-content: left;
+}
+
+.timer {
+    justify-content: right;
+}
+
+.top-text-box {
+    font-size: 38px;
+    font-weight: 700;
+    background-color: brown;
+    padding: 10px 15px;
+    border-radius: 15px;
+    
+}
+
+.reset-button {
+    border-radius: 50px;
+    width:55px;
+    height:55px;
+}
