@@ -9,6 +9,7 @@ function App() {
   const [board, setBoard] = useState([...blank_board]);
 
   const mineBoard = useRef([]);
+  const endOfGame = useRef(false);
 
   const createMines = () => {
     // creates an array of nums from 1-81
@@ -43,6 +44,7 @@ function App() {
         flags={flags}
         setFlags={setFlags}
         mineBoard={[...mineBoard.current]}
+        endOfGame={endOfGame}
       />
     </div>
   );
