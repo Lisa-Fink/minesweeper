@@ -19,6 +19,7 @@ function Board(props) {
     endOfGame,
     isActive,
     setIsActive,
+    level,
   } = props;
 
   const cellsToCheck = useRef([]);
@@ -166,27 +167,31 @@ function Board(props) {
     let right_edge = true;
     const adjacent = [];
     cell = parseInt(cell);
+    const rowLen =
+      level === 'beginner' ? 9 : level === 'intermediate' ? 16 : 30;
     // check if not left edge
-    if (cell % 9 !== 1) {
+    if (cell % rowLen !== 1) {
       left_edge = false;
       adjacent.push(cell - 1);
     }
     // check if not right edge
-    if (cell % 9 !== 0) {
+    if (cell % rowLen !== 0) {
       right_edge = false;
       adjacent.push(cell + 1);
     }
     //check if not top edge
-    if (cell > 9) {
-      !left_edge && adjacent.push(cell - 10);
-      !right_edge && adjacent.push(cell - 8);
-      adjacent.push(cell - 9);
+    if (cell > rowLen) {
+      !left_edge && adjacent.push(cell - (rowLen + 1));
+      !right_edge && adjacent.push(cell - (rowLen - 1));
+      adjacent.push(cell - rowLen);
     }
     //check if not bottom edge
-    if (cell < 73) {
-      !left_edge && adjacent.push(cell + 8);
-      !right_edge && adjacent.push(cell + 10);
-      adjacent.push(cell + 9);
+    if (
+      cell < (level === 'beginner' ? 73 : level === 'intermediate' ? 241 : 451)
+    ) {
+      !left_edge && adjacent.push(cell + (rowLen - 1));
+      !right_edge && adjacent.push(cell + (rowLen + 1));
+      adjacent.push(cell + rowLen);
     }
     return adjacent;
   };
@@ -227,8 +232,7 @@ function Board(props) {
 
   return (
     <div>
-      Board
-      <div className="board-container">{boardGrid}</div>
+      <div className={`board-container ${level}`}>{boardGrid}</div>
     </div>
   );
 }

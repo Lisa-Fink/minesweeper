@@ -1,7 +1,21 @@
 .board-container {
+    width: min-content;
     display: grid;
+}
+
+.beginner {
     grid-template-columns: repeat(9, 60px);
     grid-template-rows: repeat(9, 60px);
+}
+
+.intermediate {
+    grid-template-columns: repeat(16, 40px);
+    grid-template-rows: repeat(16, 40px);
+}
+
+.expert {
+    grid-template-columns: repeat(30, 28px);
+    grid-template-rows: repeat(16, 28px);
 }
 
 .board-grid {

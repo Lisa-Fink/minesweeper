@@ -6,10 +6,11 @@ import Board from './Board';
 import TopBoard from './TopBoard';
 
 function App() {
-  const blank_board = new Array(81).fill(0);
-
   const [flags, setFlags] = useState(0);
   const [board, setBoard] = useState([]);
+
+  const [level, setLevel] = useState('beginner');
+  const changedLevel = useRef(false);
 
   // timer states
   const [isActive, setIsActive] = useState(false);
@@ -18,6 +19,7 @@ function App() {
   const mineBoard = useRef([]);
   const endOfGame = useRef(false);
   const set_mines = useRef(false);
+  const gridSize = useRef(81);
 
   // set the mines the first time the game loads
   useEffect(() => {
@@ -26,6 +28,19 @@ function App() {
       set_mines.current = true;
     }
   }, []);
+
+  useEffect(() => {
+    if (changedLevel.current === true) {
+      changedLevel.current = false;
+      console.log('level use effect');
+      level === 'beginner'
+        ? (gridSize.current = 81)
+        : level === 'intermediate'
+        ? (gridSize.current = 16 * 16)
+        : (gridSize.current = 30 * 16);
+      resetGame();
+    }
+  }, [level]);
 
   const resetGame = () => {
     setSeconds(0);
@@ -36,10 +51,13 @@ function App() {
   };
 
   const createMines = () => {
+    const mineCount =
+      level === 'beginner' ? 10 : level === 'intermediate' ? 40 : 99;
     // creates an array of nums from 0-80
-    let grid = [...Array(81).keys()];
+    let grid = [...Array(gridSize.current).keys()];
+    const blank_board = new Array(gridSize.current).fill(0);
     let board_copy = [...blank_board];
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < mineCount; i++) {
       // adds the index at grid index mine as a mine
       let mine = Math.floor(Math.random() * grid.length);
       board_copy = [
@@ -83,6 +101,8 @@ function App() {
           formattedTime={formattedTime}
           flags={flags}
           resetGame={resetGame}
+          setLevel={setLevel}
+          changedLevel={changedLevel}
         />
         <Board
           board={board}
@@ -93,6 +113,7 @@ function App() {
           endOfGame={endOfGame}
           isActive={isActive}
           setIsActive={setIsActive}
+          level={level}
         />
       </div>
     </div>

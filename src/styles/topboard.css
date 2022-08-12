@@ -32,3 +32,14 @@
     width:55px;
     height:55px;
 }
+
+#difficulty-level {
+    margin: 15px;
+    font-size: 18px;
+    border-radius: 15px;
+    padding: 6px;
+}
+
+#difficulty-level ::part(listbox) {
+    border-radius: 15px;
+}
