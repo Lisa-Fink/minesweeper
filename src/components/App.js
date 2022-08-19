@@ -20,6 +20,7 @@ function App() {
   const endOfGame = useRef(false);
   const set_mines = useRef(false);
   const gridSize = useRef(81);
+  const clickedTile = useRef(null);
 
   // set the mines the first time the game loads
   useEffect(() => {
@@ -32,7 +33,6 @@ function App() {
   useEffect(() => {
     if (changedLevel.current === true) {
       changedLevel.current = false;
-      console.log('level use effect');
       level === 'beginner'
         ? (gridSize.current = 81)
         : level === 'intermediate'
@@ -65,7 +65,7 @@ function App() {
         'x',
         ...board_copy.slice(grid[mine] + 1),
       ];
-      console.log('set mine', grid[mine] + 1);
+      // console.log('set mine', grid[mine] + 1);
       // removes the mine that was just added
       grid.splice(mine, 1);
     }
@@ -89,6 +89,18 @@ function App() {
     return `${minutes}:${secs}`;
   };
 
+  const processMouseUp = () => {
+    if (!endOfGame.current && clickedTile.current) {
+      if (clickedTile.current.className === 'board-grid clicking') {
+        clickedTile.current.classList.remove('clicking');
+      }
+      clickedTile.current = null;
+    }
+  };
+
+  // adds mouseup to body so that mousedown and up functions if dragging
+  document.body.addEventListener('mouseup', processMouseUp);
+
   return (
     <div className="App">
       <div className="app-container">
@@ -103,6 +115,7 @@ function App() {
           resetGame={resetGame}
           setLevel={setLevel}
           changedLevel={changedLevel}
+          level={level}
         />
         <Board
           board={board}
@@ -114,6 +127,7 @@ function App() {
           isActive={isActive}
           setIsActive={setIsActive}
           level={level}
+          clickedTile={clickedTile}
         />
       </div>
     </div>

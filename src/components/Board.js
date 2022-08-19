@@ -1,6 +1,10 @@
 import React from 'react';
 import { useEffect, useRef } from 'react';
 import '../styles/board.css';
+import flag from '../img/flag.png';
+import bomb from '../img/mine.png';
+
+// TODO change tile on hover and click down. remove u. a lot of styling
 
 function Board(props) {
   // board starts with 81 zeros
@@ -20,6 +24,7 @@ function Board(props) {
     isActive,
     setIsActive,
     level,
+    clickedTile,
   } = props;
 
   const cellsToCheck = useRef([]);
@@ -34,7 +39,6 @@ function Board(props) {
       if (!isActive) {
         setIsActive(true);
       }
-      console.log(e.target.id);
       const cell = e.target.id;
       if (mineBoard[cell - 1] === 'x') {
         endOfGame.current = 'lose';
@@ -48,7 +52,10 @@ function Board(props) {
   const processFlag = (e) => {
     e.preventDefault();
     if (!endOfGame.current) {
-      const cell = e.target.id;
+      let cell = e.target.id;
+      if (e.target.alt === 'flag') {
+        cell = e.target.parentNode.id;
+      }
       const flag_count = flags;
       if (board[cell - 1] === 'f') {
         if (mineBoard[cell - 1] === 'x') {
@@ -208,6 +215,24 @@ function Board(props) {
     return mineCount;
   };
 
+  const content = (grid) => {
+    if (grid === 'f') {
+      return <img src={flag} className="tile-img" alt="flag" />;
+    } else if (grid === 'x' && endOfGame.current) {
+      return <img src={bomb} className="tile-img" alt="mine" />;
+    } else if (grid !== 0 && grid !== 'u' && grid !== 'x') {
+      return grid;
+    }
+  };
+
+  const processMousePress = (e, grid) => {
+    if (!endOfGame.current && !clickedTile.current) {
+      let tile = e.target.alt === 'flag' ? e.target.parentNode.id : e.target.id;
+      clickedTile.current = document.getElementById(tile);
+      clickedTile.current.classList.add('clicking');
+    }
+  };
+
   const boardGrid = board.map((grid, key) => {
     return (
       <div
@@ -223,16 +248,22 @@ function Board(props) {
         key={key}
         id={key + 1}
         onClick={processClick}
+        onMouseDown={(e) => processMousePress(e, grid)}
         onContextMenu={processFlag}
       >
-        {grid !== 0 && grid !== 'x' && grid}
+        {content(grid)}
       </div>
     );
   });
 
   return (
     <div>
-      <div className={`board-container ${level}`}>{boardGrid}</div>
+      <div
+        className={`board-container ${level}`}
+        onContextMenu={(e) => e.preventDefault()}
+      >
+        {boardGrid}
+      </div>
     </div>
   );
 }

@@ -3,6 +3,8 @@ import Timer from './Timer';
 
 import '../styles/topboard.css';
 
+import cool from '../img/cool.png';
+
 const TopBoard = (props) => {
   const {
     seconds,
@@ -13,14 +15,19 @@ const TopBoard = (props) => {
     resetGame,
     setLevel,
     changedLevel,
+    level,
   } = props;
 
   const changeLevel = (e) => {
     changedLevel.current = true;
     setLevel(e.target.value);
   };
+
+  const flagAmt =
+    level === 'beginner' ? 10 : level === 'intermediate' ? 40 : 99;
   return (
-    <div>
+    <div className="tb-container">
+      <div className="title">MINESWEEPER</div>
       <select
         id="difficulty-level"
         name="difficulty level"
@@ -32,11 +39,13 @@ const TopBoard = (props) => {
       </select>
       <div className="top-board">
         <div className="top-container flags">
-          <div className="top-text-box">{flags}</div>
+          <div className="top-text-box">
+            {flags} / {flagAmt}
+          </div>
         </div>
         <div className="top-container">
           <button className="reset-button" onClick={resetGame}>
-            Cool
+            <img src={cool} alt="Cool" className="reset-button-img" />
           </button>
         </div>
         <div className="top-container timer">

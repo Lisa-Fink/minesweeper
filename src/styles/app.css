@@ -1,18 +1,16 @@
 .App {
-    width:900px;
+    width:fit-content;
     margin: 0 auto;
-    background-color: beige;
-    height: 100vh;
+    background-color: rgb(153,0,0);
+    min-height: 90vh;
     display: flex;
     justify-content: center;
     align-items: center;
+    border: 5px rgb(20,0,0) solid;
+    border-radius: 15px;
 }
 
 .app-container {
     width: min-content;
-    border: 5px solid black;
-    border-radius: 15px;
     padding: 10px;
-
-    
 }

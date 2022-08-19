@@ -1,3 +1,9 @@
+.tb-container .title {
+    text-align: center;
+    font-size: 56px;
+    font-weight: bold;
+}
+
 .top-board {
     display: flex;
     justify-content: space-between;
@@ -12,16 +18,18 @@
 
 .flags {
     justify-content: left;
+    min-width: 160px;
 }
 
 .timer {
     justify-content: right;
+    min-width: 160px;
 }
 
 .top-text-box {
     font-size: 38px;
     font-weight: 700;
-    background-color: brown;
+    /* background-color: rgb(103, 0, 0); */
     padding: 10px 15px;
     border-radius: 15px;
     
@@ -31,6 +39,13 @@
     border-radius: 50px;
     width:55px;
     height:55px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.reset-button-img {
+    width: 56px;
 }
 
 #difficulty-level {

@@ -1,6 +1,9 @@
 .board-container {
     width: min-content;
     display: grid;
+    background-color: rgb(55, 0, 0);
+    gap: 5px;
+    border: 5px rgb(55, 0, 0) solid
 }
 
 .beginner {
@@ -14,17 +17,27 @@
 }
 
 .expert {
-    grid-template-columns: repeat(30, 28px);
-    grid-template-rows: repeat(16, 28px);
+    grid-template-columns: repeat(30, 30px);
+    grid-template-rows: repeat(16, 30px);
 }
 
 .board-grid {
-    border: 1px black solid;
-    background-color: rgb(221, 221, 221);
+    background-color: rgb(153, 0, 0);
+    box-shadow: 2px 2px rgb(29, 0, 0);
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 24px;
+}
+
+.clicking {
+    background-color:  rgb(255, 0, 0);
 }
 
 .unopen {
-    background-color: rgb(83, 83, 83);
+    background-color: rgb(80, 0,0);
+    box-shadow:2px 2px rgb(29, 0, 0) inset;
 }
 
 .win {
@@ -32,5 +45,9 @@
 }
 
 .lose {
-    background-color: red;
+    background-color: rgb(255, 0, 0);
+}
+
+.tile-img {
+    max-width: 28px;
 }
