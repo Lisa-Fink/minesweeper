@@ -2,6 +2,8 @@
 
 ## Created with Javascript, React, and CSS.
 
+## <a href ='https://lisa-fink.github.io/minesweeper/'> Live Preview </a>
+
 <img src="minesweeper-screenshot.png" width="300">
 
 ### Left clicks select each open tile pressed
