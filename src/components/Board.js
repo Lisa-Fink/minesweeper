@@ -86,8 +86,8 @@ function Board(props) {
     }
     // cellsToCheck will have len after first cycle. This will remove the
     // cell that is currently being checked
-    else if (cellsToCheck.length && cellsToCheck[0] === cell) {
-      cellsToCheck = cellsToCheck.slice(1);
+    else if (cellsToCheck.length) {
+      cellsToCheck.shift();
     }
 
     cellsChecked.add(cell);
