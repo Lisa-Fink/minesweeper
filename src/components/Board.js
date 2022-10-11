@@ -27,12 +27,12 @@ function Board(props) {
     clickedTile,
   } = props;
 
-  const cellsToCheck = useRef([]);
   const flagCheck = useRef(false);
   const checkWin = useRef(false);
-  const copyBoard = useRef([]);
 
-  const nums = '12345678';
+  let cellsToCheck = [];
+  const cellsChecked = new Set();
+  let copyBoard = [];
 
   const processClick = (e) => {
     if (!endOfGame.current) {
@@ -79,52 +79,50 @@ function Board(props) {
   };
 
   const clearCells = (cell) => {
-    if (!cellsToCheck.current.length) {
+    if (!cellsToCheck.length) {
       // create a copy of board. the copy will be updated until all cells
       // have been cleared, then board state will be updated and re rendered
-      copyBoard.current = [...board];
+      copyBoard = [...board];
     }
     // cellsToCheck will have len after first cycle. This will remove the
     // cell that is currently being checked
-    else if (cellsToCheck.current.length && cellsToCheck.current[0] === cell) {
-      cellsToCheck.current = cellsToCheck.current.slice(1);
+    else if (cellsToCheck.length && cellsToCheck[0] === cell) {
+      cellsToCheck = cellsToCheck.slice(1);
     }
-    //find value for cell by checking for mines
-    //if it is a number - change cell to number - do nothing else
-    // if it is a u, -change cell to u - add adjacent to cellToCheck
-    // if it is a flag do nothing - and check cellToCheck length
+
+    cellsChecked.add(cell);
+
+    /*    find value for cell by checking for mines
+    if it is a number - change cell to number - do nothing else
+    if it is a u, -change cell to u - add adjacent to cellToCheck
+    if it is a flag do nothing - and check cellToCheck length */
 
     const mines = findMines(cell);
 
     if (copyBoard[cell - 1] !== 'f') {
       if (mines) {
-        // change cell on copyBoard to mine number
-        const newBoard = [...copyBoard.current];
-        newBoard[cell - 1] = mines;
-        copyBoard.current = newBoard;
-      } else if (parseInt(copyBoard.current[cell - 1]) === 0) {
+        // change cell on copyBoard to numbers of surrounding mines
+        copyBoard[cell - 1] = mines;
+      } else if (parseInt(copyBoard[cell - 1]) === 0) {
         // change cell on board to u
         // add adjacent to cellsToCheck
         const adjacent = findAdjacent(cell);
-        const check = [];
         for (const adj of adjacent) {
-          if (parseInt(copyBoard.current[adj - 1]) === 0) {
-            check.push(adj);
+          if (parseInt(copyBoard[adj - 1]) === 0) {
+            if (!cellsChecked.has(adj)) {
+              cellsToCheck.push(adj);
+            }
           }
         }
-        let combined = [...cellsToCheck.current, ...check];
-        // combines and removes duplicates
-        cellsToCheck.current = [...new Set(combined)];
-        const newBoard = [...copyBoard.current];
-        newBoard[cell - 1] = 'u';
-        copyBoard.current = newBoard;
+        copyBoard[cell - 1] = 'u';
       }
     }
-    if (cellsToCheck.current.length) {
-      clearCells(cellsToCheck.current[0]);
+    if (cellsToCheck.length) {
+      clearCells(cellsToCheck[0]);
     } else {
       checkWin.current = true;
-      setBoard(copyBoard.current);
+      cellsChecked.clear();
+      setBoard(copyBoard);
     }
   };
 
@@ -237,7 +235,7 @@ function Board(props) {
     return (
       <div
         className={
-          (grid === 'u') | nums.includes(grid)
+          (grid === 'u') | (Number(grid) && grid > 0 && grid < 9)
             ? 'board-grid unopen'
             : endOfGame.current === 'win' && grid === 'x'
             ? 'board-grid win'
