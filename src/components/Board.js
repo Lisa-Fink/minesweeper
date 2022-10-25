@@ -40,6 +40,8 @@ function Board(props) {
     if (!endOfGame.current) {
       // check if first click
       if (!isActive) {
+        // reset flag count to 0 (flags placed before start will be overwritten)
+        setFlags(0);
         // create mine board, add mines to board,
         const newBoardWithMines = createMines(e.target.id - 1);
         setIsActive(true); // triggers timer
