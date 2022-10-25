@@ -260,6 +260,7 @@ function Board(props) {
   };
 
   const processMousePress = (e, grid) => {
+    // highlights the tile on mouse down
     if (!endOfGame.current && !clickedTile.current) {
       let tile = e.target.alt === 'flag' ? e.target.parentNode.id : e.target.id;
       clickedTile.current = document.getElementById(tile);

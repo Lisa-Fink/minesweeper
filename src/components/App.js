@@ -65,6 +65,7 @@ function App() {
   };
 
   const processMouseUp = () => {
+    // un-highlights the tile on mouse up
     if (!endOfGame.current && clickedTile.current) {
       if (clickedTile.current.className === 'board-grid clicking') {
         clickedTile.current.classList.remove('clicking');
@@ -73,8 +74,8 @@ function App() {
     }
   };
 
-  // adds mouseup to body so that mousedown and up functions if dragging
-  document.body.addEventListener('mouseup', processMouseUp);
+  // adds mouseup to entire document incase mouse is dragged while down
+  document.addEventListener('mouseup', processMouseUp);
 
   return (
     <div className="App">
