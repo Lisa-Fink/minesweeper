@@ -6,9 +6,10 @@
 
 <img src="minesweeper-screenshot.png" width="300">
 
-## Added an addition feature where the first click is never a mine
+## Includes an additional feature where the first click is never a mine
 
 ## Uses Fisher-Yates shuffle algorithm to choose random mine locations
+
 <br>
 
 ## How To Play:
