@@ -3,7 +3,8 @@
     display: grid;
     background-color: rgb(55, 0, 0);
     gap: 5px;
-    border: 5px rgb(55, 0, 0) solid
+    border: 5px rgb(55, 0, 0) solid;
+    color: rgb(177, 116, 116)
 }
 
 .beginner {
