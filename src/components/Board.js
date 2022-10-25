@@ -83,7 +83,6 @@ function Board(props) {
       tempMineBoard[gridNums[mineNum]] = 'x';
     }
     mineBoard.current = tempMineBoard;
-    setBoard(tempMineBoard);
   };
 
   const processFlag = (e) => {
