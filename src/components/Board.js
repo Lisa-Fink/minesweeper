@@ -94,24 +94,34 @@ function Board(props) {
         cell = e.target.parentNode.id;
       }
       const flag_count = flags;
+      const tempBoard = [...board];
+      // check if removing a flag
       if (board[cell - 1] === 'f') {
+        // Remove a flag
+
+        // if the removed flag was on a mine replace the f on board to an x
         if (mineBoard.current[cell - 1] === 'x') {
           flagCheck.current = true;
           setFlags(flag_count - 1);
-          setBoard([...board.slice(0, cell - 1), 'x', ...board.slice(cell)]);
+          tempBoard[cell - 1] = 'x';
         } else {
+          // if the removed flag was on an open tile replace the f on board to a 0
           flagCheck.current = true;
           setFlags(flag_count - 1);
-          setBoard([...board.slice(0, cell - 1), 0, ...board.slice(cell)]);
+          tempBoard[cell - 1] = 0;
         }
       } else if (
+        // Place a flag
+
         (parseInt(board[cell - 1]) === 0) |
         (board[cell - 1] === 'x')
       ) {
         flagCheck.current = true;
-        setBoard([...board.slice(0, cell - 1), 'f', ...board.slice(cell)]);
+
+        tempBoard[cell - 1] = 'f';
         setFlags(flag_count + 1);
       }
+      setBoard(tempBoard);
     }
   };
 
@@ -131,15 +141,16 @@ function Board(props) {
 
       if (copyBoard[curCell - 1] !== 'f') {
         if (mines) {
-          // if there are mines surround cell
+          // if there are mines surrounding cell
           // change cell on copyBoard to number of surrounding mines
           copyBoard[curCell - 1] = mines;
         } else if (parseInt(copyBoard[curCell - 1]) === 0) {
-          // change cell on board to u
-          // add adjacent to cellsToCheck
+          // if cell is open change cell on board to u
+          // add adjacent cells to cellsToCheck
           const adjacent = findAdjacent(curCell);
           for (const adj of adjacent) {
             if (parseInt(copyBoard[adj - 1]) === 0) {
+              // only add an adjacent cell if it hasn't been checked or isn't already in the array
               if (!cellsChecked.has(adj)) {
                 cellsToCheck.push(adj);
               }
@@ -181,7 +192,6 @@ function Board(props) {
   const gameEnd = () => {
     setIsActive(false);
     showMines();
-    // TODO: set a short timeout and show menu
   };
 
   const showMines = () => {
