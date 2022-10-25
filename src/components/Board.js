@@ -7,12 +7,17 @@ import bomb from '../img/mine.png';
 // TODO change tile on hover and click down. remove u. a lot of styling
 
 function Board(props) {
-  // board starts with 81 zeros
-  // zero means open
-  // f means flagged
-  // 1-8 is number of mines. only appears on unopened grids after clicking
-  // u is unopened but blank
-  // x is a mine (game over if clicked)
+  /* 
+  board is the displayed board, 
+  starts with 81 zeros
+  zero means open
+  f means flagged
+  1-8 is number of mines. only appears on unopened grids after clicking
+  u is unopened but blank
+  x is a mine (game over if clicked) 
+
+  mineBoard holds mines and adjacent mine numbers
+  */
 
   const {
     board,
@@ -36,9 +41,9 @@ function Board(props) {
       // check if first click
       if (!isActive) {
         // create mine board, add mines to board,
-        createMines(e.target.id - 1);
+        const newBoardWithMines = createMines(e.target.id - 1);
         setIsActive(true); // triggers timer
-        clearCells(parseInt(e.target.id), [...mineBoard.current]);
+        clearCells(parseInt(e.target.id), newBoardWithMines);
         return;
       }
       const cell = e.target.id;
@@ -77,12 +82,21 @@ function Board(props) {
       gridNums[randomIndex] = temp;
     }
 
-    // place mines on mineBoard
-    const tempMineBoard = mineBoard.current;
+    // place mines on mineBoard and update adjacent mine count
+    const tempMineBoard = [...mineBoard.current];
+    const tempBoard = [...mineBoard.current];
     for (let mineNum = 0; mineNum < mineCount; mineNum++) {
       tempMineBoard[gridNums[mineNum]] = 'x';
+      tempBoard[gridNums[mineNum]] = 'x';
+      // adjToMine returns cell numbers not indexes
+      const adjToMine = findAdjacent(gridNums[mineNum] + 1);
+      for (let adj of adjToMine) {
+        if (tempMineBoard[adj - 1] !== 'x') tempMineBoard[adj - 1] += 1;
+      }
     }
     mineBoard.current = tempMineBoard;
+
+    return tempBoard;
   };
 
   const processFlag = (e) => {
@@ -127,35 +141,35 @@ function Board(props) {
   const clearCells = (cell, copyBoard) => {
     const cellsToCheck = [cell];
     const cellsChecked = new Set();
+    cellsChecked.add(cell);
 
     while (cellsToCheck.length) {
-      /*    find value for cell by checking for mines
-    if it is a number - change cell to number - do nothing else
-    if it is a u, -change cell to u - add adjacent to cellToCheck
-    if it is a flag do nothing - and check cellToCheck length */
+      /*    
+      Find value for cell by checking mineBoard.
+      If it is a flag do nothing.
+      If it is a number > 0, there's an adjacent mine change cell to number, do nothing else.
+      Otherwise it is an open cell, change cell to u, and add all adjacent 
+      cells that haven't been added to cellsToCheck to cellToCheck.
+      */
 
       let curCell = cellsToCheck.pop();
-      cellsChecked.add(curCell);
-      const mines = findMines(curCell);
 
-      if (copyBoard[curCell - 1] !== 'f') {
-        if (mines) {
-          // if there are mines surrounding cell
-          // change cell on copyBoard to number of surrounding mines
-          copyBoard[curCell - 1] = mines;
-        } else if (parseInt(copyBoard[curCell - 1]) === 0) {
-          // if cell is open change cell on board to u
-          // add adjacent cells to cellsToCheck
+      if (copyBoard[curCell - 1] !== 'f' && copyBoard[curCell - 1] !== 'u') {
+        // checks if the current cell doesn't have adjacent mines
+        if (mineBoard.current[curCell - 1] === 0) {
+          copyBoard[curCell - 1] = 'u';
+          // add adjacent cells to be checked
           const adjacent = findAdjacent(curCell);
           for (const adj of adjacent) {
-            if (parseInt(copyBoard[adj - 1]) === 0) {
-              // only add an adjacent cell if it hasn't been checked or isn't already in the array
-              if (!cellsChecked.has(adj)) {
-                cellsToCheck.push(adj);
-              }
+            // only add an adjacent cell if it hasn't been checked or isn't already in the array
+            if (!cellsChecked.has(adj)) {
+              cellsToCheck.push(adj);
+              cellsChecked.add(curCell);
             }
           }
-          copyBoard[curCell - 1] = 'u';
+        } else {
+          // current cell has adjacent mines
+          copyBoard[curCell - 1] = mineBoard.current[curCell - 1];
         }
       }
     }
@@ -235,18 +249,6 @@ function Board(props) {
       adjacent.push(cell + rowLen);
     }
     return adjacent;
-  };
-
-  const findMines = (cell) => {
-    // take a cell, and return the total mines in its adjacent cells
-    const cellsArr = findAdjacent(cell);
-    let mineCount = 0;
-    for (let cell of cellsArr) {
-      if (mineBoard.current[cell - 1] === 'x') {
-        mineCount += 1;
-      }
-    }
-    return mineCount;
   };
 
   const content = (grid) => {
