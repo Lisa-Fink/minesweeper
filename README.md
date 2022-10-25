@@ -6,6 +6,13 @@
 
 <img src="minesweeper-screenshot.png" width="300">
 
+## Added an addition feature where the first click is never a mine
+
+## Uses Fisher-Yates shuffle algorithm to choose random mine locations
+<br>
+
+## How To Play:
+
 ### Left clicks select each open tile pressed
 
 ### Right clicks add or remove flags
