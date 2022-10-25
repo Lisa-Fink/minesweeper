@@ -7,7 +7,6 @@ import TopBoard from './TopBoard';
 
 function App() {
   const [flags, setFlags] = useState(0);
-  const [board, setBoard] = useState([]);
 
   const [level, setLevel] = useState('beginner');
   const changedLevel = useRef(false);
@@ -16,19 +15,17 @@ function App() {
   const [isActive, setIsActive] = useState(false);
   const [seconds, setSeconds] = useState(0);
 
-  const mineBoard = useRef([]);
   const endOfGame = useRef(false);
-  const set_mines = useRef(false);
   const gridSize = useRef(81);
   const clickedTile = useRef(null);
 
-  // set the mines the first time the game loads
-  useEffect(() => {
-    if (!set_mines.current) {
-      createMines();
-      set_mines.current = true;
-    }
-  }, []);
+  const createBlankBoard = () => {
+    return new Array(gridSize.current).fill(0);
+  };
+
+  // initialized board and mineBoard to a blank board
+  const [board, setBoard] = useState(createBlankBoard());
+  const mineBoard = useRef(createBlankBoard());
 
   useEffect(() => {
     if (changedLevel.current === true) {
@@ -47,30 +44,8 @@ function App() {
     setIsActive(false);
     endOfGame.current = false;
     setFlags(0);
-    createMines();
-  };
-
-  const createMines = () => {
-    const mineCount =
-      level === 'beginner' ? 10 : level === 'intermediate' ? 40 : 99;
-    // creates an array of nums from 0-80
-    let grid = [...Array(gridSize.current).keys()];
-    const blank_board = new Array(gridSize.current).fill(0);
-    let board_copy = [...blank_board];
-    for (let i = 0; i < mineCount; i++) {
-      // adds the index at grid index mine as a mine
-      let mine = Math.floor(Math.random() * grid.length);
-      board_copy = [
-        ...board_copy.slice(0, grid[mine]),
-        'x',
-        ...board_copy.slice(grid[mine] + 1),
-      ];
-      // console.log('set mine', grid[mine] + 1);
-      // removes the mine that was just added
-      grid.splice(mine, 1);
-    }
-    mineBoard.current = [...board_copy];
-    setBoard(board_copy);
+    setBoard(createBlankBoard);
+    mineBoard.current = createBlankBoard();
   };
 
   const formattedTime = (sec) => {
@@ -122,12 +97,12 @@ function App() {
           setBoard={setBoard}
           flags={flags}
           setFlags={setFlags}
-          mineBoard={[...mineBoard.current]}
           endOfGame={endOfGame}
           isActive={isActive}
           setIsActive={setIsActive}
           level={level}
           clickedTile={clickedTile}
+          mineBoard={mineBoard}
         />
       </div>
     </div>

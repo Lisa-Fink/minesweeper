@@ -19,34 +19,71 @@ function Board(props) {
     setBoard,
     flags,
     setFlags,
-    mineBoard,
     endOfGame,
     isActive,
     setIsActive,
     level,
     clickedTile,
+    mineBoard,
   } = props;
 
   const flagCheck = useRef(false);
   const checkWin = useRef(false);
 
-  let cellsToCheck = [];
-  const cellsChecked = new Set();
-  let copyBoard = [];
-
   const processClick = (e) => {
+    // if end of game ignore all clicks
     if (!endOfGame.current) {
+      // check if first click
       if (!isActive) {
-        setIsActive(true);
+        // create mine board, add mines to board,
+        createMines(e.target.id - 1);
+        setIsActive(true); // triggers timer
+        clearCells(parseInt(e.target.id), [...mineBoard.current]);
+        return;
       }
       const cell = e.target.id;
-      if (mineBoard[cell - 1] === 'x') {
+      if (mineBoard.current[cell - 1] === 'x') {
         endOfGame.current = 'lose';
         gameEnd();
       } else if (board[cell - 1] === 0) {
-        clearCells(cell);
+        clearCells(cell, [...board]);
       }
     }
+  };
+
+  const createMines = (first_click) => {
+    const mineCount =
+      level === 'beginner' ? 10 : level === 'intermediate' ? 40 : 99;
+
+    // create array of cells except for first_click
+    let gridNums = [];
+    for (let i = 0; i < board.length; i++) {
+      if (i !== first_click) {
+        gridNums.push(i);
+      }
+    }
+
+    // shuffle gridNums (Fisher-Yates shuffle)
+    let lastUnshuffledIndex = gridNums.length,
+      temp,
+      randomIndex;
+    while (lastUnshuffledIndex) {
+      // Pick an element to shuffle
+      randomIndex = Math.floor(Math.random() * lastUnshuffledIndex--);
+
+      // Swap it with the current element
+      temp = gridNums[lastUnshuffledIndex];
+      gridNums[lastUnshuffledIndex] = gridNums[randomIndex];
+      gridNums[randomIndex] = temp;
+    }
+
+    // place mines on mineBoard
+    const tempMineBoard = mineBoard.current;
+    for (let mineNum = 0; mineNum < mineCount; mineNum++) {
+      tempMineBoard[gridNums[mineNum]] = 'x';
+    }
+    mineBoard.current = tempMineBoard;
+    setBoard(tempMineBoard);
   };
 
   const processFlag = (e) => {
@@ -58,7 +95,7 @@ function Board(props) {
       }
       const flag_count = flags;
       if (board[cell - 1] === 'f') {
-        if (mineBoard[cell - 1] === 'x') {
+        if (mineBoard.current[cell - 1] === 'x') {
           flagCheck.current = true;
           setFlags(flag_count - 1);
           setBoard([...board.slice(0, cell - 1), 'x', ...board.slice(cell)]);
@@ -78,52 +115,42 @@ function Board(props) {
     }
   };
 
-  const clearCells = (cell) => {
-    if (!cellsToCheck.length) {
-      // create a copy of board. the copy will be updated until all cells
-      // have been cleared, then board state will be updated and re rendered
-      copyBoard = [...board];
-    }
-    // cellsToCheck will have len after first cycle. This will remove the
-    // cell that is currently being checked
-    else if (cellsToCheck.length) {
-      cellsToCheck.shift();
-    }
+  const clearCells = (cell, copyBoard) => {
+    const cellsToCheck = [cell];
+    const cellsChecked = new Set();
 
-    cellsChecked.add(cell);
-
-    /*    find value for cell by checking for mines
+    while (cellsToCheck.length) {
+      /*    find value for cell by checking for mines
     if it is a number - change cell to number - do nothing else
     if it is a u, -change cell to u - add adjacent to cellToCheck
     if it is a flag do nothing - and check cellToCheck length */
 
-    const mines = findMines(cell);
+      let curCell = cellsToCheck.pop();
+      cellsChecked.add(curCell);
+      const mines = findMines(curCell);
 
-    if (copyBoard[cell - 1] !== 'f') {
-      if (mines) {
-        // change cell on copyBoard to numbers of surrounding mines
-        copyBoard[cell - 1] = mines;
-      } else if (parseInt(copyBoard[cell - 1]) === 0) {
-        // change cell on board to u
-        // add adjacent to cellsToCheck
-        const adjacent = findAdjacent(cell);
-        for (const adj of adjacent) {
-          if (parseInt(copyBoard[adj - 1]) === 0) {
-            if (!cellsChecked.has(adj)) {
-              cellsToCheck.push(adj);
+      if (copyBoard[curCell - 1] !== 'f') {
+        if (mines) {
+          // if there are mines surround cell
+          // change cell on copyBoard to number of surrounding mines
+          copyBoard[curCell - 1] = mines;
+        } else if (parseInt(copyBoard[curCell - 1]) === 0) {
+          // change cell on board to u
+          // add adjacent to cellsToCheck
+          const adjacent = findAdjacent(curCell);
+          for (const adj of adjacent) {
+            if (parseInt(copyBoard[adj - 1]) === 0) {
+              if (!cellsChecked.has(adj)) {
+                cellsToCheck.push(adj);
+              }
             }
           }
+          copyBoard[curCell - 1] = 'u';
         }
-        copyBoard[cell - 1] = 'u';
       }
     }
-    if (cellsToCheck.length) {
-      clearCells(cellsToCheck[0]);
-    } else {
-      checkWin.current = true;
-      cellsChecked.clear();
-      setBoard(copyBoard);
-    }
+    checkWin.current = true;
+    setBoard(copyBoard);
   };
 
   useEffect(() => {
@@ -137,7 +164,7 @@ function Board(props) {
       for (const index in board) {
         if (
           (board[index] === 0) |
-          (board[index] === 'f' && mineBoard[index] !== 'x') |
+          (board[index] === 'f' && mineBoard.current[index] !== 'x') |
           (board[index] === 'x')
         ) {
           isEnd = false;
@@ -159,8 +186,8 @@ function Board(props) {
 
   const showMines = () => {
     let newBoard = [...board];
-    for (const index in mineBoard) {
-      if (mineBoard[index] === 'x') {
+    for (const index in mineBoard.current) {
+      if (mineBoard.current[index] === 'x') {
         newBoard[index] = 'x';
       }
     }
@@ -206,7 +233,7 @@ function Board(props) {
     const cellsArr = findAdjacent(cell);
     let mineCount = 0;
     for (let cell of cellsArr) {
-      if (mineBoard[cell - 1] === 'x') {
+      if (mineBoard.current[cell - 1] === 'x') {
         mineCount += 1;
       }
     }
