@@ -4,8 +4,6 @@ import '../styles/board.css';
 import flag from '../img/flag.png';
 import bomb from '../img/mine.png';
 
-// TODO change tile on hover and click down. remove u. a lot of styling
-
 function Board(props) {
   /* 
   board is the displayed board, 
@@ -74,7 +72,10 @@ function Board(props) {
     let lastUnshuffledIndex = gridNums.length,
       temp,
       randomIndex;
-    while (lastUnshuffledIndex) {
+
+    const tempMineBoard = [...mineBoard.current];
+    const tempBoard = [...mineBoard.current];
+    for (let i = 0; i < mineCount; i++) {
       // Pick an element to shuffle
       randomIndex = Math.floor(Math.random() * lastUnshuffledIndex--);
 
@@ -82,22 +83,20 @@ function Board(props) {
       temp = gridNums[lastUnshuffledIndex];
       gridNums[lastUnshuffledIndex] = gridNums[randomIndex];
       gridNums[randomIndex] = temp;
-    }
 
-    // place mines on mineBoard and update adjacent mine count
-    const tempMineBoard = [...mineBoard.current];
-    const tempBoard = [...mineBoard.current];
-    for (let mineNum = 0; mineNum < mineCount; mineNum++) {
-      tempMineBoard[gridNums[mineNum]] = 'x';
-      tempBoard[gridNums[mineNum]] = 'x';
+      // Store the randomly chosen element as mineNum
+      const mineNum = gridNums[lastUnshuffledIndex];
+
+      // place mine at minNum on mineBoard and update adjacent mine count
+      tempMineBoard[mineNum] = 'x';
+      tempBoard[mineNum] = 'x';
       // adjToMine returns cell numbers not indexes
-      const adjToMine = findAdjacent(gridNums[mineNum] + 1);
+      const adjToMine = findAdjacent(mineNum + 1);
       for (let adj of adjToMine) {
         if (tempMineBoard[adj - 1] !== 'x') tempMineBoard[adj - 1] += 1;
       }
     }
     mineBoard.current = tempMineBoard;
-
     return tempBoard;
   };
 
